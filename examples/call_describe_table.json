@@ -1,0 +1,27 @@
+{
+  "description": "Describe Table Schema",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "tools/call",
+    "params": {
+      "name": "describe_table",
+      "arguments": {
+        "table_name": "users"
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Table 'users' has 5 columns:\n\n[\n  {\n    \"column_name\": \"id\",\n    \"data_type\": \"int\",\n    \"is_nullable\": \"NO\",\n    \"column_default\": \"\",\n    \"column_key\": \"PRI\",\n    \"extra\": \"auto_increment\"\n  },\n  {\n    \"column_name\": \"username\",\n    \"data_type\": \"varchar\",\n    \"is_nullable\": \"NO\",\n    \"column_default\": \"\",\n    \"column_key\": \"UNI\",\n    \"extra\": \"\"\n  },\n  {\n    \"column_name\": \"email\",\n    \"data_type\": \"varchar\",\n    \"is_nullable\": \"NO\",\n    \"column_default\": \"\",\n    \"column_key\": \"\",\n    \"extra\": \"\"\n  },\n  {\n    \"column_name\": \"created_at\",\n    \"data_type\": \"timestamp\",\n    \"is_nullable\": \"YES\",\n    \"column_default\": \"CURRENT_TIMESTAMP\",\n    \"column_key\": \"\",\n    \"extra\": \"DEFAULT_GENERATED\"\n  },\n  {\n    \"column_name\": \"status\",\n    \"data_type\": \"enum\",\n    \"is_nullable\": \"YES\",\n    \"column_default\": \"active\",\n    \"column_key\": \"\",\n    \"extra\": \"\"\n  }\n]"
+        }
+      ],
+      "isError": false
+    }
+  }
+}

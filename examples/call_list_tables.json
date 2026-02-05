@@ -1,0 +1,25 @@
+{
+  "description": "List All Tables",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/call",
+    "params": {
+      "name": "list_tables",
+      "arguments": {}
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Found 3 tables:\n\n[\n  {\n    \"table_name\": \"users\",\n    \"table_schema\": \"mydb\",\n    \"table_type\": \"BASE TABLE\"\n  },\n  {\n    \"table_name\": \"orders\",\n    \"table_schema\": \"mydb\",\n    \"table_type\": \"BASE TABLE\"\n  },\n  {\n    \"table_name\": \"products\",\n    \"table_schema\": \"mydb\",\n    \"table_type\": \"BASE TABLE\"\n  }\n]"
+        }
+      ],
+      "isError": false
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "description": "List Available Tools",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/list"
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "tools": [
+        {
+          "name": "list_tables",
+          "description": "Lists all tables in the connected database. Returns table names, schemas, and types.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "required": []
+          }
+        },
+        {
+          "name": "describe_table",
+          "description": "Describes the schema of a specific table. Returns column names, data types, nullability, defaults, and keys.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "table_name": {
+                "type": "string",
+                "description": "The name of the table to describe"
+              }
+            },
+            "required": ["table_name"]
+          }
+        },
+        {
+          "name": "execute_readonly_query",
+          "description": "Executes a read-only SQL query (SELECT only). Write operations are strictly blocked. Returns column names and rows.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "The SQL SELECT query to execute"
+              }
+            },
+            "required": ["query"]
+          }
+        },
+        {
+          "name": "explain_query",
+          "description": "Returns the execution plan for a SQL query without executing it. Useful for understanding query performance.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "The SQL query to explain"
+              }
+            },
+            "required": ["query"]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "description": "Execute Read-Only Query",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "tools/call",
+    "params": {
+      "name": "execute_readonly_query",
+      "arguments": {
+        "query": "SELECT id, username, email FROM users WHERE status = 'active' LIMIT 10"
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 5,
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Query executed successfully. Returned 3 rows:\n\n{\n  \"columns\": [\n    \"id\",\n    \"username\",\n    \"email\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 1,\n      \"username\": \"john_doe\",\n      \"email\": \"john@example.com\"\n    },\n    {\n      \"id\": 2,\n      \"username\": \"jane_smith\",\n      \"email\": \"jane@example.com\"\n    },\n    {\n      \"id\": 5,\n      \"username\": \"bob_wilson\",\n      \"email\": \"bob@example.com\"\n    }\n  ],\n  \"row_count\": 3\n}"
+        }
+      ],
+      "isError": false
+    }
+  }
+}

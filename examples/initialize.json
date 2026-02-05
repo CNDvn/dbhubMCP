@@ -1,0 +1,36 @@
+{
+  "description": "MCP Server Initialization",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {
+        "roots": {
+          "listChanged": true
+        }
+      },
+      "clientInfo": {
+        "name": "claude-desktop",
+        "version": "1.0.0"
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {
+        "tools": {
+          "listChanged": false
+        }
+      },
+      "serverInfo": {
+        "name": "dbhub-mcp-server",
+        "version": "1.0.0"
+      }
+    }
+  }
+}

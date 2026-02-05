@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go mod tidy:*)",
+      "Bash(go build:*)",
+      "Bash(go test:*)",
+      "Bash(tree:*)",
+      "Bash(./dbhub-mcp-server.exe)",
+      "Bash(echo:*)",
+      "mcp__dbhub-mcp-server__explain_query"
+    ]
+  }
+}

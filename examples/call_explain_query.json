@@ -1,0 +1,27 @@
+{
+  "description": "Explain Query Execution Plan",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 6,
+    "method": "tools/call",
+    "params": {
+      "name": "explain_query",
+      "arguments": {
+        "query": "SELECT * FROM users WHERE email = 'john@example.com'"
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 6,
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Query execution plan:\n\n{\n  \"columns\": [\n    \"id\",\n    \"select_type\",\n    \"table\",\n    \"partitions\",\n    \"type\",\n    \"possible_keys\",\n    \"key\",\n    \"key_len\",\n    \"ref\",\n    \"rows\",\n    \"filtered\",\n    \"Extra\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 1,\n      \"select_type\": \"SIMPLE\",\n      \"table\": \"users\",\n      \"partitions\": null,\n      \"type\": \"ALL\",\n      \"possible_keys\": null,\n      \"key\": null,\n      \"key_len\": null,\n      \"ref\": null,\n      \"rows\": 1000,\n      \"filtered\": 10.00,\n      \"Extra\": \"Using where\"\n    }\n  ],\n  \"row_count\": 1\n}"
+        }
+      ],
+      "isError": false
+    }
+  }
+}
