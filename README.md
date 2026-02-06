@@ -4,12 +4,14 @@ A Model Context Protocol (MCP) server written in Go that provides safe, read-onl
 
 ## Features
 
-- ✅ **MCP Protocol Compliance**: Full implementation of the MCP specification with STDIO transport
+- ✅ **MCP Protocol Compliance**: Full implementation of the MCP specification
+- ✅ **Dual Transport Support**: STDIO (for Claude Desktop) and HTTP (for web/network clients)
 - ✅ **Multi-Database Support**: MySQL and PostgreSQL via unified interface
 - ✅ **Read-Only Enforcement**: Multi-layer security to prevent write operations
 - ✅ **Connection Pooling**: Efficient connection management
 - ✅ **Query Validation**: SQL injection prevention and read-only query enforcement
-- ✅ **Extensible Architecture**: Easy to add support for more databases
+- ✅ **HTTP Security**: Optional API key authentication and CORS support
+- ✅ **Extensible Architecture**: Easy to add support for more databases and transports
 
 ## MCP Tools
 
@@ -56,6 +58,7 @@ nano .env
 
 ### Environment Variables
 
+#### Database Configuration
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `DB_TYPE` | Database type: "mysql" or "postgres" | mysql |
@@ -71,14 +74,34 @@ nano .env
 | `MAX_ROWS` | Maximum rows to return | 1000 |
 | `LOG_LEVEL` | Logging level | info |
 
+#### Transport Configuration (Optional)
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `TRANSPORT_TYPE` | Transport mode: "stdio" or "http" | stdio |
+| `HTTP_ADDR` | HTTP server address (HTTP mode only) | :8080 |
+| `HTTP_CORS_ORIGINS` | Comma-separated CORS origins (HTTP mode) | * |
+| `HTTP_API_KEY` | Optional API key for authentication | (none) |
+
 ## Usage
 
 ### Running the Server
 
+**STDIO Mode (Default - for Claude Desktop):**
 ```bash
 # Load environment variables and run
 export $(cat .env | xargs) && ./dbhub-mcp-server
 ```
+
+**HTTP Mode (for web/network clients):**
+```bash
+export TRANSPORT_TYPE=http
+export HTTP_ADDR=:8080
+export HTTP_CORS_ORIGINS=*
+export HTTP_API_KEY=your-secret-key
+export $(cat .env | xargs) && ./dbhub-mcp-server
+```
+
+For complete HTTP mode documentation, see [README_HTTP.md](README_HTTP.md).
 
 ### Using with Claude Desktop
 
@@ -141,12 +164,25 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readonly_use
 
 ```
 ┌─────────────────────────────────┐
-│   MCP Client (Claude/LLM)       │
+│  MCP Clients                    │
+│  ├─ Claude Desktop (STDIO)      │
+│  ├─ Web Browser (HTTP)          │
+│  └─ Custom Client (HTTP)        │
 └────────────┬────────────────────┘
-             │ STDIO (JSON-RPC)
-┌────────────▼────────────────────┐
-│   Transport Layer               │
-└────────────┬────────────────────┘
+             │
+     ┌───────┴───────┐
+     ↓               ↓
+┌─────────┐    ┌──────────┐
+│ STDIO   │    │ HTTP     │
+│ (stdin/ │    │ (POST    │
+│ stdout) │    │ /mcp)    │
+└────┬────┘    └────┬─────┘
+     │              │
+     └──────┬───────┘
+            ↓
+┌────────────────────────────┐
+│ MessageTransport Interface │
+└────────────┬───────────────┘
              │
 ┌────────────▼────────────────────┐
 │   MCP Server                    │
@@ -175,23 +211,27 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readonly_use
 dbhubMCP/
 ├── cmd/
 │   └── server/
-│       └── main.go              # Entry point
+│       └── main.go                  # Entry point
 ├── internal/
 │   ├── mcp/
-│   │   ├── server.go            # MCP server implementation
-│   │   ├── protocol.go          # MCP protocol types
-│   │   ├── transport.go         # STDIO transport
-│   │   └── handlers.go          # Tool handlers
+│   │   ├── server.go                # MCP server implementation
+│   │   ├── protocol.go              # MCP protocol types
+│   │   ├── transport_interface.go   # Transport abstraction
+│   │   ├── transport_stdio.go       # STDIO transport
+│   │   ├── transport_http.go        # HTTP transport
+│   │   ├── transport_http_test.go   # HTTP transport tests
+│   │   └── handlers.go              # Tool handlers
 │   ├── database/
-│   │   ├── adapter.go           # Database interface
-│   │   ├── mysql.go             # MySQL implementation
-│   │   └── postgres.go          # PostgreSQL implementation
+│   │   ├── adapter.go               # Database interface
+│   │   ├── mysql.go                 # MySQL implementation
+│   │   └── postgres.go              # PostgreSQL implementation
 │   ├── security/
-│   │   └── validator.go         # SQL validation
+│   │   └── validator.go             # SQL validation
 │   └── config/
-│       └── config.go            # Configuration
+│       └── config.go                # Configuration
 ├── go.mod
-└── README.md
+├── README.md
+└── README_HTTP.md                   # HTTP transport documentation
 ```
 
 ### Running Tests

@@ -62,8 +62,30 @@ func main() {
 	// Create SQL validator
 	validator := security.NewValidator(10000) // 10KB max query length
 
-	// Create MCP server
-	server := mcp.NewServer(adapter, validator, cfg.MaxRows)
+	// Create transport based on configuration
+	var transport mcp.MessageTransport
+	switch cfg.TransportType {
+	case "stdio":
+		transport = mcp.NewStdioTransport()
+	case "http":
+		transport = mcp.NewHTTPTransport(mcp.HTTPTransportConfig{
+			Addr:        cfg.HTTPAddr,
+			CORSOrigins: cfg.HTTPCORSOrigins,
+			APIKey:      cfg.HTTPAPIKey,
+		})
+		log.Printf("[INFO] HTTP server will listen on %s", cfg.HTTPAddr)
+		if cfg.HTTPAPIKey != "" {
+			log.Printf("[INFO] API key authentication enabled")
+		}
+		if len(cfg.HTTPCORSOrigins) > 0 {
+			log.Printf("[INFO] CORS origins: %v", cfg.HTTPCORSOrigins)
+		}
+	default:
+		log.Fatalf("[FATAL] Unsupported transport type: %s", cfg.TransportType)
+	}
+
+	// Create MCP server with injected transport
+	server := mcp.NewServer(transport, adapter, validator, cfg.MaxRows)
 
 	// Setup context with cancellation
 	ctx, cancel := context.WithCancel(context.Background())

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "dbhub": {
+      "command": "C:\\Users\\hieu.banh\\learn\\dbhubMCP\\dbhub-mcp-server.exe",
+      "env": {
+        "DB_TYPE": "mysql",
+        "DB_HOST": "localhost",
+        "DB_PORT": "3309",
+        "DB_NAME": "test",
+        "DB_USER": "root",
+        "DB_PASSWORD": "123456"
+      }
+    }
+  }
+}

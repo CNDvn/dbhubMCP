@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -26,6 +27,12 @@ type Config struct {
 
 	// Server configuration
 	LogLevel        string
+
+	// Transport configuration
+	TransportType   string   // "stdio" or "http"
+	HTTPAddr        string   // ":8080"
+	HTTPCORSOrigins []string // ["*"]
+	HTTPAPIKey      string   // Optional
 }
 
 // LoadFromEnv loads configuration from environment variables
@@ -43,6 +50,12 @@ func LoadFromEnv() (*Config, error) {
 		QueryTimeout:   time.Duration(getEnvInt("QUERY_TIMEOUT_SEC", 30)) * time.Second,
 		MaxRows:        getEnvInt("MAX_ROWS", 1000),
 		LogLevel:       getEnv("LOG_LEVEL", "info"),
+
+		// Transport configuration
+		TransportType:   getEnv("TRANSPORT_TYPE", "stdio"),
+		HTTPAddr:        getEnv("HTTP_ADDR", ":8080"),
+		HTTPCORSOrigins: getEnvSlice("HTTP_CORS_ORIGINS", []string{"*"}),
+		HTTPAPIKey:      getEnv("HTTP_API_KEY", ""),
 	}
 
 	// Validate required fields
@@ -54,6 +67,9 @@ func LoadFromEnv() (*Config, error) {
 	}
 	if cfg.DBType != "mysql" && cfg.DBType != "postgres" {
 		return nil, fmt.Errorf("DB_TYPE must be 'mysql' or 'postgres', got: %s", cfg.DBType)
+	}
+	if cfg.TransportType != "stdio" && cfg.TransportType != "http" {
+		return nil, fmt.Errorf("TRANSPORT_TYPE must be 'stdio' or 'http', got: %s", cfg.TransportType)
 	}
 
 	return cfg, nil
@@ -73,4 +89,12 @@ func getEnvInt(key string, defaultValue int) int {
 		}
 	}
 	return defaultValue
+}
+
+func getEnvSlice(key string, defaultValue []string) []string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return strings.Split(value, ",")
 }

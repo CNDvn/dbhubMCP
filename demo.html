@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBHub MCP Server - HTTP Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .config-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 12px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .query-section {
+            margin-bottom: 30px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        .output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 DBHub MCP Server - HTTP Demo</h1>
+        <p class="subtitle">Interactive demo for testing HTTP transport</p>
+
+        <div class="config-section">
+            <h2>Configuration</h2>
+            <div class="input-group">
+                <label for="serverUrl">Server URL:</label>
+                <input type="text" id="serverUrl" value="http://localhost:8080/mcp" placeholder="http://localhost:8080/mcp">
+            </div>
+            <div class="input-group">
+                <label for="apiKey">API Key:</label>
+                <input type="text" id="apiKey" value="test-secret-key" placeholder="Enter API key (leave empty if not required)">
+            </div>
+        </div>
+
+        <div id="status"></div>
+
+        <div class="button-group">
+            <button onclick="testHealth()">🏥 Health Check</button>
+            <button onclick="listTools()">🔧 List Tools</button>
+            <button onclick="pingDatabase()">📡 Ping Database</button>
+            <button onclick="listTables()">📋 List Tables</button>
+        </div>
+
+        <div class="query-section">
+            <h2>Custom Query</h2>
+            <div class="input-group">
+                <label for="tableName">Table Name (for describe_table):</label>
+                <input type="text" id="tableName" placeholder="e.g., users">
+                <button onclick="describeTable()" style="margin-top: 10px; width: 100%;">📊 Describe Table</button>
+            </div>
+            <div class="input-group" style="margin-top: 20px;">
+                <label for="sqlQuery">SQL Query:</label>
+                <textarea id="sqlQuery" rows="4" placeholder="SELECT * FROM users LIMIT 10"></textarea>
+                <button onclick="executeQuery()" style="margin-top: 10px; width: 100%;">▶️ Execute Query</button>
+            </div>
+        </div>
+
+        <h2>Output</h2>
+        <div id="output" class="output">Ready to test...</div>
+    </div>
+
+    <script>
+        let requestId = 1;
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            setTimeout(() => {
+                statusDiv.className = '';
+                statusDiv.textContent = '';
+            }, 5000);
+        }
+
+        function displayOutput(data) {
+            const output = document.getElementById('output');
+            output.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function makeRequest(method, params = null) {
+            const serverUrl = document.getElementById('serverUrl').value;
+            const apiKey = document.getElementById('apiKey').value;
+
+            const payload = {
+                jsonrpc: '2.0',
+                id: requestId++,
+                method: method
+            };
+
+            if (params) {
+                payload.params = params;
+            }
+
+            try {
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+
+                if (apiKey) {
+                    headers['X-API-Key'] = apiKey;
+                }
+
+                const response = await fetch(serverUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showStatus(`Error: ${data.error.message}`, 'error');
+                } else {
+                    showStatus('Request successful!', 'success');
+                }
+
+                displayOutput(data);
+            } catch (error) {
+                showStatus(`Request failed: ${error.message}`, 'error');
+                displayOutput({ error: error.message });
+            }
+        }
+
+        async function testHealth() {
+            const serverUrl = document.getElementById('serverUrl').value.replace('/mcp', '/health');
+
+            try {
+                const response = await fetch(serverUrl);
+                const data = await response.json();
+                showStatus('Health check successful!', 'success');
+                displayOutput(data);
+            } catch (error) {
+                showStatus(`Health check failed: ${error.message}`, 'error');
+                displayOutput({ error: error.message });
+            }
+        }
+
+        async function listTools() {
+            await makeRequest('tools/list');
+        }
+
+        async function pingDatabase() {
+            await makeRequest('ping');
+        }
+
+        async function listTables() {
+            await makeRequest('tools/call', {
+                name: 'list_tables',
+                arguments: {}
+            });
+        }
+
+        async function describeTable() {
+            const tableName = document.getElementById('tableName').value.trim();
+            if (!tableName) {
+                showStatus('Please enter a table name', 'error');
+                return;
+            }
+
+            await makeRequest('tools/call', {
+                name: 'describe_table',
+                arguments: {
+                    table_name: tableName
+                }
+            });
+        }
+
+        async function executeQuery() {
+            const query = document.getElementById('sqlQuery').value.trim();
+            if (!query) {
+                showStatus('Please enter a SQL query', 'error');
+                return;
+            }
+
+            await makeRequest('tools/call', {
+                name: 'execute_readonly_query',
+                arguments: {
+                    query: query
+                }
+            });
+        }
+
+        // Test connection on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testHealth();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

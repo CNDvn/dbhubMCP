@@ -22,7 +22,7 @@ type ToolHandler func(ctx context.Context, args map[string]interface{}) (*CallTo
 
 // Server represents the MCP server
 type Server struct {
-	transport *Transport
+	transport MessageTransport
 	adapter   database.Adapter
 	validator *security.Validator
 	tools     map[string]ToolHandler
@@ -32,9 +32,9 @@ type Server struct {
 }
 
 // NewServer creates a new MCP server
-func NewServer(adapter database.Adapter, validator *security.Validator, maxRows int) *Server {
+func NewServer(transport MessageTransport, adapter database.Adapter, validator *security.Validator, maxRows int) *Server {
 	s := &Server{
-		transport: NewStdioTransport(),
+		transport: transport,
 		adapter:   adapter,
 		validator: validator,
 		tools:     make(map[string]ToolHandler),
@@ -117,7 +117,7 @@ func (s *Server) RegisterTool(tool Tool, handler ToolHandler) {
 
 // Run starts the MCP server
 func (s *Server) Run(ctx context.Context) error {
-	log.Printf("[INFO] MCP Server starting...")
+	log.Printf("[INFO] MCP Server starting with %s transport...", s.transport.GetType())
 
 	// Connect to database
 	if err := s.adapter.Connect(ctx); err != nil {
@@ -127,7 +127,14 @@ func (s *Server) Run(ctx context.Context) error {
 
 	log.Printf("[INFO] Connected to %s database", s.adapter.GetDBType())
 	log.Printf("[INFO] Registered %d tools", len(s.toolDefs))
-	log.Printf("[INFO] Server ready, listening on STDIO...")
+
+	// Start transport
+	if err := s.transport.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start transport: %w", err)
+	}
+	defer s.transport.Close()
+
+	log.Printf("[INFO] Server ready")
 
 	// Main message loop
 	for {
