@@ -6,27 +6,29 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 // Config holds all configuration for the MCP server
 type Config struct {
 	// Database configuration
-	DBType          string // "mysql" or "postgres"
-	DBHost          string
-	DBPort          int
-	DBName          string
-	DBUser          string
-	DBPassword      string
-	DBMaxConns      int
-	DBMaxIdleConns  int
-	DBConnTimeout   time.Duration
+	DBType         string // "mysql" or "postgres"
+	DBHost         string
+	DBPort         int
+	DBName         string
+	DBUser         string
+	DBPassword     string
+	DBMaxConns     int
+	DBMaxIdleConns int
+	DBConnTimeout  time.Duration
 
 	// Query execution limits
-	QueryTimeout    time.Duration
-	MaxRows         int
+	QueryTimeout time.Duration
+	MaxRows      int
 
 	// Server configuration
-	LogLevel        string
+	LogLevel string
 
 	// Transport configuration
 	TransportType   string   // "stdio" or "http"
@@ -37,6 +39,8 @@ type Config struct {
 
 // LoadFromEnv loads configuration from environment variables
 func LoadFromEnv() (*Config, error) {
+	godotenv.Load()
+
 	cfg := &Config{
 		DBType:         getEnv("DB_TYPE", "mysql"),
 		DBHost:         getEnv("DB_HOST", "localhost"),
